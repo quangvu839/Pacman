@@ -44,8 +44,9 @@ public class Board extends JPanel implements ActionListener {
     private int pacsLeft, score, level;
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
+    private int toLeft, toRight, above, below;
 
-    private Image redghost, pinkghost, powderghost, orangeghost;
+    private Image redghost, pinkghost, powderghost, orangeghost, scaredghost;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
@@ -222,12 +223,134 @@ public class Board extends JPanel implements ActionListener {
                     }
 
                 } else {
-                    count = (int) (Math.random() * count);
-                    if (count > 3) {
-                        count = 3;
-                    }
-                    ghost_dx[i] = dx[count];
-                    ghost_dy[i] = dy[count];
+                	switch(i) {
+                	case 0: // red ghost
+                		if ((ghost_x[i] - pacman_x) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                			ghost_dx[i] = -1;
+                			ghost_dy[i] = 0;
+                		}
+                		else if ((ghost_y[i] - pacman_y) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
+                			ghost_dx[i] = 0;
+                			ghost_dy[i] = -1;
+                		}
+                		else if ((pacman_x - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
+                			ghost_dx[i] = 1;
+                			ghost_dy[i] = 0;
+                		}
+                		else if ((pacman_y - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
+                			ghost_dx[i] = 0;
+                			ghost_dy[i] = 1;
+                		}
+                		else {
+                			count = (int) (Math.random() * count);
+                            if (count > 3) {
+                                count = 3;
+                            }
+                            ghost_dx[i] = dx[count];
+                            ghost_dy[i] = dy[count];
+                		}
+                        break;
+                	case 1: // pink ghost
+                		if ((ghost_x[i] - (pacman_x + 4 * pacmand_x)) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                			ghost_dx[i] = -1;
+                			ghost_dy[i] = 0;
+                		}
+                		else if ((ghost_y[i] - (pacman_y + 4 * pacmand_y)) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
+                			ghost_dx[i] = 0;
+                			ghost_dy[i] = -1;
+                		}
+                		else if (((pacman_x + 4 * pacmand_x) - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
+                			ghost_dx[i] = 1;
+                			ghost_dy[i] = 0;
+                		}
+                		else if (((pacman_y + 4 * pacmand_y) - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
+                			ghost_dx[i] = 0;
+                			ghost_dy[i] = 1;
+                		}
+                		else {
+                			count = (int) (Math.random() * count);
+                            if (count > 3) {
+                                count = 3;
+                            }
+                            ghost_dx[i] = dx[count];
+                            ghost_dy[i] = dy[count];
+                		}
+                        break;
+                	case 2: // powder ghost
+                		if ((ghost_x[i] - (pacman_x + 2*(pacman_x - ghost_x[0]))) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                			ghost_dx[i] = -1;
+                			ghost_dy[i] = 0;
+                		}
+                		else if ((ghost_y[i] - (pacman_y + 2*(pacman_y - ghost_y[0]))) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
+                			ghost_dx[i] = 0;
+                			ghost_dy[i] = -1;
+                		}
+                		else if (((pacman_x + 2*(pacman_x - ghost_x[0])) - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
+                			ghost_dx[i] = 1;
+                			ghost_dy[i] = 0;
+                		}
+                		else if (((pacman_y + 2*(pacman_y - ghost_y[0])) - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
+                			ghost_dx[i] = 0;
+                			ghost_dy[i] = 1;
+                		}
+                		else {
+                			count = (int) (Math.random() * count);
+                            if (count > 3) {
+                                count = 3;
+                            }
+                            ghost_dx[i] = dx[count];
+                            ghost_dy[i] = dy[count];
+                		}
+                        break;
+                	case 3: // orange ghost
+                		if ((Math.pow((ghost_x[i] - pacman_x), 2) + Math.pow((ghost_y[i] - pacman_y), 2)) > (64 * Math.pow(BLOCK_SIZE, 2))) {
+                			if ((ghost_x[i] - pacman_x) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                    			ghost_dx[i] = -1;
+                    			ghost_dy[i] = 0;
+                    		}
+                    		else if ((ghost_y[i] - pacman_y) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
+                    			ghost_dx[i] = 0;
+                    			ghost_dy[i] = -1;
+                    		}
+                    		else if ((pacman_x - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
+                    			ghost_dx[i] = 1;
+                    			ghost_dy[i] = 0;
+                    		}
+                    		else if ((pacman_y - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
+                    			ghost_dx[i] = 0;
+                    			ghost_dy[i] = 1;
+                    		}
+                    		else {
+                    			count = (int) (Math.random() * count);
+                                if (count > 3) {
+                                    count = 3;
+                                }
+                                ghost_dx[i] = dx[count];
+                                ghost_dy[i] = dy[count];
+                    		}
+                		}
+                		else {
+                			if ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1) {
+                                ghost_dx[i] = -1;
+                                ghost_dy[i] = 0;
+                            }
+                			else if ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1) {
+                    			ghost_dx[i] = 0;
+                    			ghost_dy[i] = 1;
+                    		}
+                			else {
+                				count = (int) (Math.random() * count);
+                                if (count > 3) {
+                                    count = 3;
+                                }
+                                ghost_dx[i] = dx[count];
+                                ghost_dy[i] = dy[count];
+                			}
+                		}
+                		System.out.println(Math.pow((ghost_x[i] - pacman_x), 2) + Math.pow((ghost_y[i] - pacman_y), 2));
+                		break;
+                	}
+                    
                 }
 
             }
@@ -247,8 +370,8 @@ public class Board extends JPanel implements ActionListener {
             	g2d.drawImage(orangeghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
             	break;
             }
-            if (pacman_x > (ghost_x[i] - 12) && pacman_x < (ghost_x[i] + 12)
-                    && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
+            if (pacman_x > (ghost_x[i] - 10) && pacman_x < (ghost_x[i] + 10)
+                    && pacman_y > (ghost_y[i] - 10) && pacman_y < (ghost_y[i] + 10)
                     && inGame) {
                 dying = true;
             }
@@ -450,6 +573,7 @@ public class Board extends JPanel implements ActionListener {
         pinkghost = new ImageIcon("images/pinkghost.png").getImage();
         powderghost = new ImageIcon("images/powderghost.png").getImage();
         orangeghost = new ImageIcon("images/orangeghost.png").getImage();
+        scaredghost = new ImageIcon("images/scaredghost.png").getImage();
         pacman1 = new ImageIcon("images/pacman.png").getImage(); // full pacman
         pacman2up = new ImageIcon("images/pacmanup1.png").getImage(); // begin opening
         pacman3up = new ImageIcon("images/pacmanup2.png").getImage();
