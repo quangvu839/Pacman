@@ -390,19 +390,19 @@ public class Board extends JPanel implements ActionListener {
                                 ghost_dy[i] = dy[count];
                 			}
                 		}
-                		else if ((ghost_x[i] - (pacman_x + 2*(pacman_x - ghost_x[0]))) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                		else if ((ghost_x[i] - (pacman_x + 2*((pacman_x + 2 * PACMAN_SPEED * pacmand_x) - ghost_x[0]))) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
                 			ghost_dx[i] = -1;
                 			ghost_dy[i] = 0;
                 		}
-                		else if ((ghost_y[i] - (pacman_y + 2*(pacman_y - ghost_y[0]))) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
+                		else if ((ghost_y[i] - (pacman_y + 2*((pacman_y + 2 * PACMAN_SPEED * pacmand_y) - ghost_y[0]))) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
                 			ghost_dx[i] = 0;
                 			ghost_dy[i] = -1;
                 		}
-                		else if (((pacman_x + 2*(pacman_x - ghost_x[0])) - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
+                		else if (((pacman_x + 2*((pacman_x + 2 * PACMAN_SPEED * pacmand_x)  - ghost_x[0])) - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
                 			ghost_dx[i] = 1;
                 			ghost_dy[i] = 0;
                 		}
-                		else if (((pacman_y + 2*(pacman_y - ghost_y[0])) - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
+                		else if (((pacman_y + 2*((pacman_y + 2 * PACMAN_SPEED * pacmand_y)  - ghost_y[0])) - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
                 			ghost_dx[i] = 0;
                 			ghost_dy[i] = 1;
                 		}
@@ -529,11 +529,12 @@ public class Board extends JPanel implements ActionListener {
             if ((ch & 32) != 0) {
             	screenData[pos] = (short) (ch & 31);
             	score++;
-            	scare.start();
-            	recover.start();
+            	scare.restart();
+            	recover.restart();
             	scatter.stop();
             	chase.stop();
             	ghostScared = true;
+            	ghostRecovering = false;
             }
             if (req_dx != 0 || req_dy != 0) {
                 if (!((req_dx == -1 && req_dy == 0 && (ch & 1) != 0)
@@ -546,7 +547,7 @@ public class Board extends JPanel implements ActionListener {
                     view_dy = pacmand_y;
                 }
             }
-            // Check for standstill
+            
             if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
                     || (pacmand_x == 1 && pacmand_y == 0 && (ch & 4) != 0)
                     || (pacmand_x == 0 && pacmand_y == -1 && (ch & 2) != 0)
@@ -683,6 +684,8 @@ public class Board extends JPanel implements ActionListener {
         for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) {
             screenData[i] = levelData[i];
         }
+        ghostRecovering = false;
+        ghostScared = false;
         scatter.start();
         ghostScatter = true;
         continueLevel();
