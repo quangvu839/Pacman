@@ -29,6 +29,8 @@ public class Board extends JPanel implements ActionListener {
 
     private boolean inGame = false;
     private boolean dying = false;
+    private boolean ghostScatter = false;
+    private boolean ghostScared = false;
 
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
@@ -44,7 +46,6 @@ public class Board extends JPanel implements ActionListener {
     private int pacsLeft, score, level;
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
-    private int toLeft, toRight, above, below;
 
     private Image redghost, pinkghost, powderghost, orangeghost, scaredghost;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
@@ -78,6 +79,9 @@ public class Board extends JPanel implements ActionListener {
     private int currentSpeed = 3;
     private short[] screenData;
     private Timer timer;
+    private Timer scatter;
+    private Timer scare;
+    private Timer chase;
 
     public Board() {
         loadImages();
@@ -103,6 +107,21 @@ public class Board extends JPanel implements ActionListener {
         dx = new int[4];
         dy = new int[4];
         timer = new Timer(40, this);
+        scatter = new Timer(7000, new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		ghostScatter = false;
+        		scatter.stop();
+        		chase.start();
+        	}
+        });
+        chase = new Timer(21000, new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		ghostScatter = true;
+        		chase.stop();
+        		scatter.start();
+        	}
+        });
+        scare = new Timer(10000, this);
         timer.start();
     }
 
@@ -225,7 +244,25 @@ public class Board extends JPanel implements ActionListener {
                 } else {
                 	switch(i) {
                 	case 0: // red ghost
-                		if ((ghost_x[i] - pacman_x) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                		if (ghostScatter) {
+                			if ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1) {
+                                ghost_dx[i] = -1;
+                                ghost_dy[i] = 0;
+                            }
+                			else if ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1) {
+                    			ghost_dx[i] = 0;
+                    			ghost_dy[i] = -1;
+                    		}
+                			else {
+                				count = (int) (Math.random() * count);
+                                if (count > 3) {
+                                    count = 3;
+                                }
+                                ghost_dx[i] = dx[count];
+                                ghost_dy[i] = dy[count];
+                			}
+                		}
+                		else if ((ghost_x[i] - pacman_x) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
                 			ghost_dx[i] = -1;
                 			ghost_dy[i] = 0;
                 		}
@@ -251,19 +288,37 @@ public class Board extends JPanel implements ActionListener {
                 		}
                         break;
                 	case 1: // pink ghost
-                		if ((ghost_x[i] - (pacman_x + 4 * pacmand_x)) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                		if (ghostScatter) {
+                			if ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1) {
+                                ghost_dx[i] = 1;
+                                ghost_dy[i] = 0;
+                            }
+                			else if ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1) {
+                    			ghost_dx[i] = 0;
+                    			ghost_dy[i] = -1;
+                    		}
+                			else {
+                				count = (int) (Math.random() * count);
+                                if (count > 3) {
+                                    count = 3;
+                                }
+                                ghost_dx[i] = dx[count];
+                                ghost_dy[i] = dy[count];
+                			}
+                		}
+                		else if ((ghost_x[i] - (pacman_x + 4 * pacmand_x * PACMAN_SPEED)) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
                 			ghost_dx[i] = -1;
                 			ghost_dy[i] = 0;
                 		}
-                		else if ((ghost_y[i] - (pacman_y + 4 * pacmand_y)) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
+                		else if ((ghost_y[i] - (pacman_y + 4 * pacmand_y * PACMAN_SPEED)) > 0 && ((screenData[pos] & 2) == 0 && ghost_dy[i] != 1)) {
                 			ghost_dx[i] = 0;
                 			ghost_dy[i] = -1;
                 		}
-                		else if (((pacman_x + 4 * pacmand_x) - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
+                		else if (((pacman_x + 4 * pacmand_x * PACMAN_SPEED) - ghost_x[i]) > 0 && ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1)) {
                 			ghost_dx[i] = 1;
                 			ghost_dy[i] = 0;
                 		}
-                		else if (((pacman_y + 4 * pacmand_y) - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
+                		else if (((pacman_y + 4 * pacmand_y * PACMAN_SPEED) - ghost_y[i]) > 0 && ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1)) {
                 			ghost_dx[i] = 0;
                 			ghost_dy[i] = 1;
                 		}
@@ -277,7 +332,25 @@ public class Board extends JPanel implements ActionListener {
                 		}
                         break;
                 	case 2: // powder ghost
-                		if ((ghost_x[i] - (pacman_x + 2*(pacman_x - ghost_x[0]))) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
+                		if (ghostScatter) {
+                			if ((screenData[pos] & 4) == 0 && ghost_dx[i] != -1) {
+                                ghost_dx[i] = 1;
+                                ghost_dy[i] = 0;
+                            }
+                			else if ((screenData[pos] & 8) == 0 && ghost_dy[i] != -1) {
+                    			ghost_dx[i] = 0;
+                    			ghost_dy[i] = 1;
+                    		}
+                			else {
+                				count = (int) (Math.random() * count);
+                                if (count > 3) {
+                                    count = 3;
+                                }
+                                ghost_dx[i] = dx[count];
+                                ghost_dy[i] = dy[count];
+                			}
+                		}
+                		else if ((ghost_x[i] - (pacman_x + 2*(pacman_x - ghost_x[0]))) > 0 && ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1)) {
                 			ghost_dx[i] = -1;
                 			ghost_dy[i] = 0;
                 		}
@@ -347,7 +420,6 @@ public class Board extends JPanel implements ActionListener {
                                 ghost_dy[i] = dy[count];
                 			}
                 		}
-                		System.out.println(Math.pow((ghost_x[i] - pacman_x), 2) + Math.pow((ghost_y[i] - pacman_y), 2));
                 		break;
                 	}
                     
@@ -377,6 +449,7 @@ public class Board extends JPanel implements ActionListener {
             }
         }
     }
+    
     
     private void movePacman() {
         int pos;
@@ -538,6 +611,8 @@ public class Board extends JPanel implements ActionListener {
         for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) {
             screenData[i] = levelData[i];
         }
+        scatter.start();
+        ghostScatter = true;
         continueLevel();
     }
 
