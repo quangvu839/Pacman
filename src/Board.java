@@ -31,6 +31,7 @@ public class Board extends JPanel implements ActionListener {
     private boolean dying = false;
     private boolean ghostScatter = false;
     private boolean ghostScared = false;
+    private boolean ghostRecovering = false;
 
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
@@ -47,7 +48,7 @@ public class Board extends JPanel implements ActionListener {
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
-    private Image redghost, pinkghost, powderghost, orangeghost, scaredghost;
+    private Image redghost, pinkghost, powderghost, orangeghost, scaredghost, scaredghost2, scaredIcon;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
@@ -56,7 +57,7 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     private final short levelData[] = {
-        19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
+        19, 26, 42, 26, 18, 18, 18, 34, 34, 18, 18, 18, 18, 18, 22,
         21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
         21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
         21, 0, 0, 0, 17, 16, 16, 24, 16, 16, 16, 16, 16, 16, 20,
@@ -82,6 +83,9 @@ public class Board extends JPanel implements ActionListener {
     private Timer scatter;
     private Timer scare;
     private Timer chase;
+    private Timer recover;
+    private Timer flashing;
+    
 
     public Board() {
         loadImages();
@@ -121,7 +125,43 @@ public class Board extends JPanel implements ActionListener {
         		scatter.start();
         	}
         });
-        scare = new Timer(10000, this);
+        recover = new Timer(5000, new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		ghostRecovering = true;
+        		scaredIcon = scaredghost;
+        		flashing.start();
+        		recover.stop();
+        	}
+        });
+        flashing = new Timer (250, new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		if (scaredIcon == scaredghost)
+        			scaredIcon = scaredghost2;
+        		else
+        			scaredIcon = scaredghost;
+        	}
+        });
+        scare = new Timer(10000, new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		ghostScared = false;
+        		ghostScatter = false;
+        		ghostRecovering = false;
+        		scare.stop();
+        		flashing.stop();
+        		chase.start();
+        		int random = (int) (Math.random() * (currentSpeed + 1));
+                if (random > currentSpeed) {
+                    random = currentSpeed;
+                }
+        		for (int i = 0; i < 4; i++) {
+        			if (ghostSpeed[i] == 0) {
+        				ghost_x[i] = 4 * BLOCK_SIZE;
+        				ghost_y[i] = 4 * BLOCK_SIZE;
+        				ghostSpeed[i] = validSpeeds[random];
+        			}
+        		}
+        	}
+        });
         timer.start();
     }
 
@@ -244,7 +284,7 @@ public class Board extends JPanel implements ActionListener {
                 } else {
                 	switch(i) {
                 	case 0: // red ghost
-                		if (ghostScatter) {
+                		if (ghostScatter || ghostScared) {
                 			if ((screenData[pos] & 1) == 0 && ghost_dx[i] != 1) {
                                 ghost_dx[i] = -1;
                                 ghost_dy[i] = 0;
@@ -428,24 +468,43 @@ public class Board extends JPanel implements ActionListener {
             }
             ghost_x[i] = ghost_x[i] + (ghost_dx[i] * ghostSpeed[i]);
             ghost_y[i] = ghost_y[i] + (ghost_dy[i] * ghostSpeed[i]);
-            switch(i) {
-            case 0:
-            	g2d.drawImage(redghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
-            	break;
-            case 1:
-            	g2d.drawImage(pinkghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
-            	break;
-            case 2:
-            	g2d.drawImage(powderghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
-            	break;
-            case 3:
-            	g2d.drawImage(orangeghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
-            	break;
+            if (ghostRecovering)
+            	g2d.drawImage(scaredIcon, ghost_x[i] + 1, ghost_y[i] + 1, this);
+            else if (ghostScared) {
+            		g2d.drawImage(scaredghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
             }
-            if (pacman_x > (ghost_x[i] - 10) && pacman_x < (ghost_x[i] + 10)
-                    && pacman_y > (ghost_y[i] - 10) && pacman_y < (ghost_y[i] + 10)
-                    && inGame) {
-                dying = true;
+            else {
+            	switch(i) {
+            	case 0:
+            		g2d.drawImage(redghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
+            		break;
+            	case 1:
+            		g2d.drawImage(pinkghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
+            		break;
+            	case 2:
+            		g2d.drawImage(powderghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
+            		break;
+            	case 3:
+            		g2d.drawImage(orangeghost, ghost_x[i] + 1, ghost_y[i] + 1, this);
+            		break;
+            	}
+            }
+            if (ghostScared) {
+            	if (pacman_x > (ghost_x[i] - 10) && pacman_x < (ghost_x[i] + 10)
+                        && pacman_y > (ghost_y[i] - 10) && pacman_y < (ghost_y[i] + 10)
+                        && inGame) {
+                    score += 100;
+                    ghost_x[i] = 2 * BLOCK_SIZE;
+                    ghost_y[i] = 2 * BLOCK_SIZE;
+                    ghostSpeed[i] = 0;
+                }
+            } 
+            else {
+            	if (pacman_x > (ghost_x[i] - 10) && pacman_x < (ghost_x[i] + 10)
+            			&& pacman_y > (ghost_y[i] - 10) && pacman_y < (ghost_y[i] + 10)
+            			&& inGame) {
+            		dying = true;
+            	}
             }
         }
     }
@@ -466,6 +525,15 @@ public class Board extends JPanel implements ActionListener {
             if ((ch & 16) != 0) {
                 screenData[pos] = (short) (ch & 15);
                 score++;
+            }
+            if ((ch & 32) != 0) {
+            	screenData[pos] = (short) (ch & 31);
+            	score++;
+            	scare.start();
+            	recover.start();
+            	scatter.stop();
+            	chase.stop();
+            	ghostScared = true;
             }
             if (req_dx != 0 || req_dy != 0) {
                 if (!((req_dx == -1 && req_dy == 0 && (ch & 1) != 0)
@@ -592,6 +660,10 @@ public class Board extends JPanel implements ActionListener {
                     g2d.setColor(dotColor);
                     g2d.fillRect(x + 11, y + 11, 2, 2);
                 }
+                if ((screenData[i] & 32) != 0) { 
+                    g2d.setColor(dotColor);
+                    g2d.fillRect(x + 11, y + 11, 8, 8);
+                }
                 i++;
             }
         }
@@ -649,6 +721,7 @@ public class Board extends JPanel implements ActionListener {
         powderghost = new ImageIcon("images/powderghost.png").getImage();
         orangeghost = new ImageIcon("images/orangeghost.png").getImage();
         scaredghost = new ImageIcon("images/scaredghost.png").getImage();
+        scaredghost2 = new ImageIcon("images/scaredghost2.png").getImage();
         pacman1 = new ImageIcon("images/pacman.png").getImage(); // full pacman
         pacman2up = new ImageIcon("images/pacmanup1.png").getImage(); // begin opening
         pacman3up = new ImageIcon("images/pacmanup2.png").getImage();
