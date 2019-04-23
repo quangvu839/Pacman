@@ -250,7 +250,7 @@ public class Board extends JPanel implements ActionListener{
             viewX = pacMoveX;
             viewY = pacMoveY;
         }
-        if (pacX % 15 == 0 && pacY % 15 == 0) {
+        if (pacX % SPACE_PIXELS == 0 && pacY % SPACE_PIXELS == 0) {
             position = pacX / SPACE_PIXELS + 15 * (int) (pacY / SPACE_PIXELS);
             ch = levelDesign[position];
             if ((ch & 16) != 0) {
@@ -276,7 +276,6 @@ public class Board extends JPanel implements ActionListener{
                     pacMoveY = moveY;
                     viewX = pacMoveX;
                     viewY = pacMoveY;
-                    System.out.println(pacMoveX);
                 }
             }
             
