@@ -8,24 +8,25 @@ public class Pacman extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public Pacman() {
-		initUI();
-	}
-	
-	private void initUI() {
-		add(new Board());
-		setTitle("Pacman");
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(380,420);
-		setLocationRelativeTo(null);
-	}
-
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
-			Pacman pac = new Pacman();
-			pac.setVisible(true);
+			Pacman pac = new Pacman(); // start new game
+			pac.setVisible(true); // make visible
 		});
 
 	}
+	public Pacman() {
+		startGame(); // start a game
+	}
+	
+	private void startGame() {
+		add(new Board()); // create board
+		setTitle("Pacman");
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setSize(380,420); // original size
+		setLocationRelativeTo(null);
+	}
+
+	
 
 }
