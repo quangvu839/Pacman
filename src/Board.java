@@ -932,7 +932,7 @@ public class Board extends JPanel implements ActionListener {
                 	if (currentSpeed < maxSpeed)
                     currentSpeed++;
                 	initLevel(currentLevel);
-                }else if (key == KeyEvent.VK_PAUSE) {
+                }else if (key == KeyEvent.VK_P) {
                 
                     if (timer.isRunning()) {
                         timer.stop();
