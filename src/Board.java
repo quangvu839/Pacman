@@ -332,9 +332,9 @@ public class Board extends JPanel implements ActionListener {
         g.setFont(smallFont);
         g.setColor(new Color(96, 128, 255));
         s = "Level: " + level + "        Score: " + score;
-        g.drawString(s, SCREEN_SIZE / 2, SCREEN_SIZE + 16);
+        g.drawString(s, 20, SCREEN_SIZE + 16);
         for (i = 0; i < pacsLeft; i++) {
-            g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
+            g.drawImage(pacman3left, (i * 28 + 8) + SCREEN_SIZE/2, SCREEN_SIZE + 1, this);
         }
     }
 
