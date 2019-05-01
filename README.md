@@ -10,6 +10,7 @@ Java
 * Earning points by eating dots/pellets
 * Ghosts turn blue if consumes power dots/pellets, send to box if eaten
 * Player starts with 5 lives
+* Pacman dies if collides with icy blue, orange, pink and red ghost.
 * Game ends when no live left
 # How to compile:
 The best way to compile the game is to run in an IDE(Eclipes is recommended). Copy the entire contents on Team6 folder and then run the program. Folder contain images so make sure to copy those images for compiling
